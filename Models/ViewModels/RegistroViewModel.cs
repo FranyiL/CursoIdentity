@@ -1,4 +1,3 @@
-
 using System.ComponentModel.DataAnnotations;
 
 namespace ProyectoIdentity.Models.ViewModels
@@ -24,7 +23,7 @@ namespace ProyectoIdentity.Models.ViewModels
         [Required(ErrorMessage = "El nombre es obligatorio.")]
         public string Nombre { get; set; }
         public string Url { get; set; }
-        public Int32 CodigoPais { get; set; }
+        public int CodigoPais { get; set; }
         public string Telefono { get; set; }
         [Required(ErrorMessage = "El país es obligatorio.")]
         public string Pais { get; set; }
