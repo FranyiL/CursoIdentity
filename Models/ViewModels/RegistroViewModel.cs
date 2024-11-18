@@ -23,13 +23,24 @@ namespace ProyectoIdentity.Models.ViewModels
         [Required(ErrorMessage = "El nombre es obligatorio.")]
         public string Nombre { get; set; }
         public string Url { get; set; }
+
+        [Display(Name = "Código de País")]
         public int CodigoPais { get; set; }
+
+        [Display(Name = "Teléfono")]
         public string Telefono { get; set; }
+
         [Required(ErrorMessage = "El país es obligatorio.")]
+        [Display(Name = "País")]
         public string Pais { get; set; }
+
+        [Display(Name = "Dirección")]
         public string Direccion { get; set; }
+
         public string Ciudad { get; set; }
+            
         [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
+        [Display(Name = "Fecha de nacimiento")]
         public DateTime FechaNacimiento { get; set; }
         [Required(ErrorMessage = "El estado es obligatorio.")]
         public bool Estado { get; set; }
