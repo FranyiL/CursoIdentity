@@ -28,12 +28,27 @@
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
+                    <div class="mb-3">
+                        <div class="custom-check">
+                            <label asp-for="RememberMe">
+                                <input asp-for="RememberMe"/>
+                                @Html.DisplayNameFor(m => m.RememberMe));
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-sm-4 offset-2">
+                    <h3>Aquí acceso a aplicaciones externas.</h3>
                 </div>
             </div>
 
             <div class="row">
-                <div class="col-sm-10 offset-2">
-                    <button type="submit" class="btn btn-success w-75 btn-lg">Registrarse</button>
+                <div class="col-sm-6 offset-2">
+                    <button type="submit" class="btn btn-success w-100 btn-lg">Acceder <i class="bi bi-arrow-right-circle-fill"></i></button>
+                    <p><a asp-action="Registro">Registrarse como un nuevo usuario?</a></p>
+                    <p><a asp-action="OlvidoPassword">Olvidaste tu contraseña?</a></p>
                 </div>
             </div>
 
