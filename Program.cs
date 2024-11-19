@@ -13,6 +13,14 @@ builder.Services.AddDbContext<AplicationDbContext>(options =>
 //Agregar el servicio de Identity a la aplicacións
 builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AplicationDbContext>();
 
+//Esta línea es para la url de retorno al acceder, cambiamos la que tenemos por defecto
+//cuando un usuario no se encuentra autenticado, lo que hará es redirigirlo a la página de acceso
+//cada vez que el usuario no este autenticado y quiera acceder a un recurso protegido necesite la autenicación
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Cuentas/Acceso";
+});
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

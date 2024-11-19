@@ -75,15 +75,17 @@ namespace ProyectoIdentity.Controllers
 
         //Método para mostrar formulario de acceso
         [HttpGet]
-        public IActionResult Acceso(){
-            
+        public IActionResult Acceso(string returnurl = null)
+        {
+            ViewData["ReturnUrl"] = returnurl;    
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken] //Para los ataques XSS
-        public async Task<IActionResult> Acceso(AccesoViewModel accesoVM)
+        public async Task<IActionResult> Acceso(AccesoViewModel accesoVM, string returnurl = null)
         {
+            ViewData["ReturnUrl"] = returnurl;  
             if (ModelState.IsValid)
             {
                 
@@ -92,7 +94,8 @@ namespace ProyectoIdentity.Controllers
 
                 if (resultado.Succeeded)
                 {
-                    return RedirectToAction("Index", "Home");
+                    //return RedirectToAction("Index", "Home");
+                    return LocalRedirect(returnurl);
                 }
                 else
                 {
