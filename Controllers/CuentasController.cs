@@ -32,6 +32,7 @@ namespace ProyectoIdentity.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken] //Para los ataques XSS
         public async Task<IActionResult> Registro(RegistroViewModel registroVM)
         {
             if (ModelState.IsValid)
@@ -77,6 +78,40 @@ namespace ProyectoIdentity.Controllers
         public IActionResult Acceso(){
             
             return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken] //Para los ataques XSS
+        public async Task<IActionResult> Acceso(AccesoViewModel accesoVM)
+        {
+            if (ModelState.IsValid)
+            {
+                
+                // Creando en usuario
+                var resultado = await _signInManager.PasswordSignInAsync(accesoVM.Email,accesoVM.Password,accesoVM.RememberMe, lockoutOnFailure: false);
+
+                if (resultado.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    ModelState.AddModelError(String.Empty, "Acceso inválido.");
+                    return View(accesoVM);
+                }
+
+            }
+            return View(accesoVM);
+        }
+
+        //Cerrar sesión de la aplicación
+        [HttpPost]
+        [ValidateAntiForgeryToken] //Para los ataques XSS
+        public async Task<IActionResult> SalirAplicacion()
+        {
+            //Destruyendo las cookies del navegador
+            await _signInManager.SignOutAsync();
+            return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
     }
