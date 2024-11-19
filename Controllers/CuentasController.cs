@@ -64,11 +64,19 @@ namespace ProyectoIdentity.Controllers
             return View(registroVM);
         }
 
+        //Manejador de errores.
         private void ValidarErrores(IdentityResult resultado){
             foreach (var error in resultado.Errors)
             {
                 ModelState.AddModelError(String.Empty, error.Description);
             }
+        }
+
+        //Método para mostrar formulario de acceso
+        [HttpGet]
+        public IActionResult Acceso(){
+            
+            return View();
         }
 
     }
