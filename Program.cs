@@ -21,6 +21,15 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Cuentas/Acceso";
 });
 
+//Estás son opciones de configuración del Identity
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequiredLength = 5;
+    options.Password.RequireLowercase = true;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
+    options.Lockout.MaxFailedAccessAttempts = 3;
+});
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

@@ -24,17 +24,19 @@ namespace ProyectoIdentity.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Registro()
+        public async Task<IActionResult> Registro(string returnurl = null)
         {
+            ViewData["ReturnUrl"] = returnurl;
             RegistroViewModel registroVM = new RegistroViewModel();
-
             return View(registroVM);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken] //Para los ataques XSS
-        public async Task<IActionResult> Registro(RegistroViewModel registroVM)
+        public async Task<IActionResult> Registro(RegistroViewModel registroVM, string returnurl = null)
         {
+            ViewData["ReturnUrl"] = returnurl;
+            returnurl = returnurl ?? Url.Content("~/");
             if (ModelState.IsValid)
             {
                 var usuario = new AppUsuario{
@@ -57,7 +59,7 @@ namespace ProyectoIdentity.Controllers
                 {
                     await _signInManager.SignInAsync(usuario, isPersistent: false);
 
-                    return RedirectToAction("Index", "Home");
+                    return LocalRedirect(returnurl);
                 }
 
                 ValidarErrores(resultado);
@@ -86,6 +88,7 @@ namespace ProyectoIdentity.Controllers
         public async Task<IActionResult> Acceso(AccesoViewModel accesoVM, string returnurl = null)
         {
             ViewData["ReturnUrl"] = returnurl;  
+            returnurl = returnurl ?? Url.Content("~/");
             if (ModelState.IsValid)
             {
                 
