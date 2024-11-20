@@ -19,6 +19,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkSto
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Cuentas/Acceso";
+    options.AccessDeniedPath = "/Cuentas/Bloqueado";
 });
 
 //Estás son opciones de configuración del Identity

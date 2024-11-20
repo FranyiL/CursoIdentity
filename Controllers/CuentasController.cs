@@ -93,12 +93,15 @@ namespace ProyectoIdentity.Controllers
             {
                 
                 // Creando en usuario
-                var resultado = await _signInManager.PasswordSignInAsync(accesoVM.Email,accesoVM.Password,accesoVM.RememberMe, lockoutOnFailure: false);
+                var resultado = await _signInManager.PasswordSignInAsync(accesoVM.Email,accesoVM.Password,accesoVM.RememberMe, lockoutOnFailure: true);
 
                 if (resultado.Succeeded)
                 {
-                    //return RedirectToAction("Index", "Home");
                     return LocalRedirect(returnurl);
+                }
+                if (resultado.IsLockedOut)
+                {
+                    return View("Bloqueado");
                 }
                 else
                 {
@@ -117,7 +120,14 @@ namespace ProyectoIdentity.Controllers
         {
             //Destruyendo las cookies del navegador
             await _signInManager.SignOutAsync();
-            return RedirectToAction(nameof(HomeController.Index), "Home");
+            return LocalRedirect("~/Cuentas/Acceso");
+        }
+
+        //Método para olvido de contraseña
+        [HttpGet]
+        public IActionResult OlvidoPassword()
+        {
+            return View();
         }
 
     }
