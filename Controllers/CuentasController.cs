@@ -130,5 +130,14 @@ namespace ProyectoIdentity.Controllers
             return View();
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken] //Para los ataques XSS
+        public async Task<IActionResult> OlvidoPassword()
+        {
+            //Destruyendo las cookies del navegador
+            await _signInManager.SignOutAsync();
+            return LocalRedirect("~/Cuentas/Acceso");
+        }
+
     }
 }
