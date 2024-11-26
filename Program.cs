@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using ProyectoIdentity.Datos;
+using ProyectoIdentity.Servicios;
 var builder = WebApplication.CreateBuilder(args);
 
 //Configuramos la conexión a la base de datos
@@ -11,7 +13,7 @@ builder.Services.AddDbContext<AplicationDbContext>(options =>
 ); 
 
 //Agregar el servicio de Identity a la aplicacións
-builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AplicationDbContext>();
+builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AplicationDbContext>().AddDefaultTokenProviders();
 
 //Esta línea es para la url de retorno al acceder, cambiamos la que tenemos por defecto
 //cuando un usuario no se encuentra autenticado, lo que hará es redirigirlo a la página de acceso
@@ -30,6 +32,9 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
     options.Lockout.MaxFailedAccessAttempts = 3;
 });
+
+//Se agrega al IEmailSender
+builder.Services.AddTransient<IEmailSender, MailJetEmailSender>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
