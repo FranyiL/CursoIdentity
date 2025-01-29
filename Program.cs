@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using ProyectoIdentity.Datos;
+using ProyectoIdentity.Models;
 using ProyectoIdentity.Servicios;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Cuentas/Bloqueado";
 });
 
+// Configurar duración del token de recuperación
+builder.Services.Configure<DataProtectionTokenProviderOptions>(opt => {
+    opt.TokenLifespan = TimeSpan.FromHours(2);
+});
 //Estás son opciones de configuración del Identity
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -33,8 +38,11 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Lockout.MaxFailedAccessAttempts = 3;
 });
 
-//Se agrega al IEmailSender
-builder.Services.AddTransient<IEmailSender, MailJetEmailSender>();
+//Inyectando la interfaz para envío de mensajes
+builder.Services.AddTransient<IMessage, Message>();
+
+// Configurar EmailSettings
+builder.Services.Configure<GmailSettings>(builder.Configuration.GetSection("GmailSettings"));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
