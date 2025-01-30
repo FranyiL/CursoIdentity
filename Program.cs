@@ -38,6 +38,12 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Lockout.MaxFailedAccessAttempts = 3;
 });
 
+builder.Services.AddAuthentication().AddFacebook(options =>
+{
+    options.AppId = "630299412732391";
+    options.AppSecret = "ed99634424f7555d9479b8d8864abad3";
+});
+
 //Inyectando la interfaz para envío de mensajes
 builder.Services.AddTransient<IMessage, Message>();
 
