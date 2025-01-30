@@ -179,10 +179,40 @@ namespace ProyectoIdentity.Controllers
         }
         
         [HttpGet]
-        [AllowAnonymous]
         public IActionResult ResetPassword(string code=null)
         {
             return code == null ? View("Error") : View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(RecuperarPasswordViewModel repViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var usuario = await _userManager.FindByEmailAsync(repViewModel.Email);
+
+                if (usuario == null)
+                {
+                    return RedirectToAction("ConfirmacionRecuperaPassword");
+                }
+
+
+                var resultado = await _userManager.ResetPasswordAsync(usuario,repViewModel.Code,repViewModel.Password);
+                if (resultado.Succeeded) 
+                {
+                    return RedirectToAction("ConfirmacionRecuperaPassword");
+                }
+                
+                ValidarErrores(resultado);
+            }
+            return View(repViewModel);
+        }
+
+        [HttpGet]
+        public IActionResult ConfirmacionRecuperaPassword()
+        {
+            return View();
         }
 
     }
