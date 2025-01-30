@@ -11,7 +11,10 @@ builder.Services.AddDbContext<AplicationDbContext>(options =>
     //Agregamos la cadena de conexión
     options.UseMySql(builder.Configuration.GetConnectionString("ConexionSql"),
         new MySqlServerVersion(new Version(8, 0, 30)))
-); 
+);
+
+//Accediendo a la información que se encuentra en appsettings.json
+var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
 //Agregar el servicio de Identity a la aplicacións
 builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AplicationDbContext>().AddDefaultTokenProviders();
@@ -38,10 +41,19 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Lockout.MaxFailedAccessAttempts = 3;
 });
 
+//Añadiendo claves de la autenticación de las apps externas
+
+//Autenticación de Facebook
 builder.Services.AddAuthentication().AddFacebook(options =>
 {
-    options.AppId = "630299412732391";
-    options.AppSecret = "ed99634424f7555d9479b8d8864abad3";
+    options.AppId = configuration["FacebookOAuth:AppId"];
+    options.AppSecret = configuration["FacebookOAuth:AppSecret"];
+});
+
+builder.Services.AddAuthentication().AddGoogle(options =>
+{
+    options.ClientId = configuration["GoogleOAuth:ClientId"];
+    options.ClientSecret = configuration["GoogleOAuth:ClientSecret"];
 });
 
 //Inyectando la interfaz para envío de mensajes
