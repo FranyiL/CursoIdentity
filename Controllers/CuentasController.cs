@@ -40,7 +40,7 @@ namespace ProyectoIdentity.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken] //Para los ataques XSS
-        public async Task<IActionResult> Registro(RegistroViewModel registroVM, string returnurl = null)
+        public async Task<IActionResult> Registro(RegistroViewModel registroVM,SendEmailRequest request, string returnurl = null)
         {
             ViewData["ReturnUrl"] = returnurl;
             returnurl = returnurl ?? Url.Content("~/");
@@ -64,6 +64,25 @@ namespace ProyectoIdentity.Controllers
 
                 if (resultado.Succeeded)
                 {
+                    //Implementación de confirmación de Email en el registro
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(usuario);
+                    var urlRetorno = Url.Action("ConfirmarEmail", "Cuentas",
+                    new
+                    {
+                        userId = usuario.Id,
+                        code = code
+                    },
+                    protocol: HttpContext.Request.Scheme);
+
+                    //Contruyecdo email para confirmación
+                    request.Subject = "Confirmar su cuenta - Proyecto Identity";
+                    request.Body = $@"
+                    <p>Porfavor confirme su cuenta dando click en el siguiente enlace:</p>
+                    <a href={urlRetorno}>Confirmar Email</a>";
+                    request.To = registroVM.Email;
+                    await _message.SendEmail(request.Subject, request.Body, request.To);
+
+                    //Registrando usuario
                     await _signInManager.SignInAsync(usuario, isPersistent: false);
 
                     return LocalRedirect(returnurl);
@@ -179,6 +198,7 @@ namespace ProyectoIdentity.Controllers
         }
         
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ResetPassword(string code=null)
         {
             return code == null ? View("Error") : View();
@@ -210,9 +230,30 @@ namespace ProyectoIdentity.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ConfirmacionRecuperaPassword()
         {
             return View();
+        }
+        //Método para confirmación en el registro
+        [HttpGet]
+        public async Task<IActionResult> ConfirmarEmail(string userId, string code)
+        {
+            if (userId == null || code == null)
+            {
+                return View("Error");
+            }
+
+            var usuario = await _userManager.FindByIdAsync(userId);
+
+            if (usuario == null)
+            {
+                return View("Error");
+            }
+
+            //Confirmando el usuario en la BD
+            var resultado = await _userManager.ConfirmEmailAsync(usuario,code);
+            return View(resultado.Succeeded ? "ConfirmarEmail" : "Error");
         }
 
     }
