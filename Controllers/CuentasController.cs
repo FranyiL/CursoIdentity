@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using ProyectoIdentity.Dtos;
 using ProyectoIdentity.Models;
 using ProyectoIdentity.Models.ViewModels;
 using ProyectoIdentity.Servicios;
 using System.Net;
+using System.Security.Claims;
 using System.Web;
 
 namespace ProyectoIdentity.Controllers
@@ -255,6 +257,99 @@ namespace ProyectoIdentity.Controllers
             var resultado = await _userManager.ConfirmEmailAsync(usuario,code);
             return View(resultado.Succeeded ? "ConfirmarEmail" : "Error");
         }
+
+        //Configuración de acceso externo: facebook, google, etc.
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult AccesoExterno(string proveedor, string returnurl = null)
+        {
+            var urlRedireccion = Url.Action("AccesoExternoCallback", "Cuentas", new { ReturnUrl = returnurl });
+            var propiedades = _signInManager.ConfigureExternalAuthenticationProperties(proveedor,urlRedireccion);
+
+            return Challenge(propiedades, proveedor);
+        }
+        
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> AccesoExternoCallback(string returnurl = null, string error = null)
+        {
+            returnurl = returnurl ?? Url.Content("~/");
+            if (error != null) 
+            {
+                ModelState.AddModelError(string.Empty, $"Error en el acceso externo {error}");
+                return View(nameof(Acceso));
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null) 
+            {
+                return RedirectToAction(nameof(Acceso));
+            }
+
+            //Acceder con el usuario en el proveedor externo
+            var resultado = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider,info.ProviderKey, isPersistent: false);
+
+            if (resultado.Succeeded)
+            {
+                //Actualizar los tokens de acceso
+                await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
+                return LocalRedirect(returnurl);
+            }
+            else
+            {
+                //Si el usuario no tiene cuenta pregunta si quiere crear una
+                ViewData["ReturnUrl"] = returnurl;
+                ViewData["NombreAMostrarProveedor"] = info.ProviderDisplayName;
+
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                var nombre = info.Principal.FindFirstValue(ClaimTypes.Name);
+                return View("ConfirmacionAccesoExterno", 
+                    new ConfirmacionAccesoExternoViewModel
+                    {
+                        Email = email,
+                        Name = nombre
+                    }
+                );
+            }
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmacionAccesoExterno(ConfirmacionAccesoExternoViewModel caeViewModel, string returnurl = null)
+        {
+            returnurl = returnurl ?? Url.Content("~/");
+            if (ModelState.IsValid)
+            {
+                //Obtener la información del usuario del proveedor externo
+                var info = await _signInManager.GetExternalLoginInfoAsync();
+
+                if (info == null)
+                {
+                    return View("Error");
+                }
+
+                var usuario = new AppUsuario { UserName = caeViewModel.Email, Email = caeViewModel.Email, Nombre = caeViewModel.Name};
+                var resultado = await _userManager.CreateAsync(usuario);
+
+                if (resultado.Succeeded)
+                {
+                    resultado = await _userManager.AddLoginAsync(usuario,info);
+                    if (resultado.Succeeded)
+                    {
+                        await _signInManager.SignInAsync(usuario,isPersistent: false);
+                        await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
+
+                        return LocalRedirect(returnurl);
+                    }
+                }
+                ValidarErrores(resultado);
+            }
+            ViewData["ReturnUrl"] = returnurl;
+            return View(caeViewModel);
+        }
+
 
     }
 }
